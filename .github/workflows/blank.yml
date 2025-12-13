@@ -1,0 +1,38 @@
+name: Auto Clear Folder Content
+
+on:
+  # 定时触发：每隔 2 天的 UTC 时间 00:00 运行
+  schedule:
+    - cron: '0 0 */2 * *'
+  # 允许手动触发（方便你测试）
+  workflow_dispatch:
+
+jobs:
+  clear-files:
+    runs-on: ubuntu-latest
+    
+    # 赋予 GITHUB_TOKEN 写权限，以便提交更改
+    permissions:
+      contents: write
+
+    steps:
+      # 1. 检出代码
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. 删除文件逻辑
+      - name: Delete folder content
+        env:
+          # 【修改这里】：把 'your-folder-name' 改成你要清空的文件夹路径
+          TARGET_FOLDER: 'images' 
+        run: |
+          echo "Cleaning folder: $TARGET_FOLDER"
+          
+          # 删除该文件夹下的所有内容，但保留文件夹本身
+          # -r: 递归删除, -f: 强制删除
+          rm -rf $TARGET_FOLDER/*
+          
+          # 【重要】Git 无法追踪空文件夹。
+          # 如果你想在 Git 中保留这个文件夹结构，必须创建一个隐藏文件（如 .gitkeep）
+          # 如果你不介意文件夹彻底消失，可以删掉下面这一行
+          touch $TARGET_FOLDER/.gitkeep
